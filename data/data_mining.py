@@ -1,5 +1,6 @@
 import pandas as pd
 import json
+import matplotlib.pyplot as plt
 
 def get_data_file_paths(data_file_registry_path = "./data_files.json"):
     with open(data_file_registry_path) as path_registry_file:
@@ -90,3 +91,26 @@ def perform_preprocessing(journeys_df, stations_df):
     stations_df = drop_inactive_stations(journeys_df, stations_df)
 
     return journeys_df, stations_df
+
+def plot_stations_pickups_returns(journeys_df, stations_df):
+    pickups = journeys_df["StartStation Id"].value_counts()
+    pickups = pickups.reindex(stations_df["id"], fill_value=0)
+    X = pickups.index.to_list()
+    Y = pickups.to_list()
+    plt.subplot(1,2,1)
+    plt.plot(X, Y, "bo")
+    plt.title("Total number of pickups in the measured timespan")
+    plt.xlabel("Station ID")
+    plt.ylabel("Number of pickups")
+
+    returns = journeys_df["EndStation Id"].value_counts()
+    returns = returns.reindex(stations_df["id"], fill_value=0)
+    X = returns.index.to_list()
+    Y = returns.to_list()
+    plt.subplot(1,2,2)
+    plt.plot(X, Y, "go")
+    plt.title("Total number of returns in the measured timespan")
+    plt.xlabel("Station ID")
+    plt.ylabel("Number of returns")
+
+    plt.show()
