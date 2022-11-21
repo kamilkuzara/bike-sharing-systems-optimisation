@@ -72,9 +72,21 @@ def journeys_preprocessing(journeys_df, stations_df):
 
     return journeys_df
 
+def drop_inactive_stations(journeys_df, stations_df):
+    pickup_stations = journeys_df["StartStation Id"].unique()
+    return_stations = journeys_df["EndStation Id"].unique()
+
+    # drop stations with zero pickups AND zero returns; those are inactive stations
+    stations_df = stations_df.drop(stations_df[(~stations_df["id"].isin(pickup_stations)) & (~stations_df["id"].isin(return_stations))].index)
+
+    return stations_df
+
 def perform_preprocessing(journeys_df, stations_df):
     stations_df = stations_preprocessing(stations_df)
 
     journeys_df = journeys_preprocessing(journeys_df, stations_df)
+
+    # remove stations not included in any journeys, i.e. with zero pickups and zero returns
+    stations_df = drop_inactive_stations(journeys_df, stations_df)
 
     return journeys_df, stations_df
