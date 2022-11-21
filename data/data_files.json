@@ -1,0 +1,53 @@
+{
+  "journeys": {
+    "directory_path": "./journey_data/",
+    "file_names": [
+      "100JourneyDataExtract07Mar2018-13Mar2018.csv",
+      "101JourneyDataExtract14Mar2018-20Mar2018.csv",
+      "102JourneyDataExtract21Mar2018-27Mar2018.csv",
+      "103JourneyDataExtract28Mar2018-03Apr2018.csv",
+      "104JourneyDataExtract04Apr2018-10Apr2018.csv",
+      "105JourneyDataExtract11Apr2018-17Apr2018.csv",
+      "106JourneyDataExtract18Apr2018-24Apr2018.csv",
+      "107JourneyDataExtract25Apr2018-01May2018.csv",
+      "108JourneyDataExtract02May2018-08May2018.csv",
+      "109JourneyDataExtract09May2018-15May2018.csv",
+      "110JourneyDataExtract16May2018-22May2018.csv",
+      "111JourneyDataExtract23May2018-29May2018.csv",
+      "112JourneyDataExtract30May2018-05June2018.csv",
+      "113JourneyDataExtract06June2018-12June2018.csv",
+      "114JourneyDataExtract13June2018-19June2018.csv",
+      "115JourneyDataExtract20June2018-26June2018.csv",
+      "116JourneyDataExtract27June2018-03July2018.csv",
+      "117JourneyDataExtract04July2018-10July2018.csv",
+      "118JourneyDataExtract11July2018-17July2018.csv",
+      "119JourneyDataExtract18July2018-24July2018.csv",
+      "120JourneyDataExtract25July2018-31July2018.csv",
+      "121JourneyDataExtract01Aug2018-07Aug2018.csv",
+      "122JourneyDataExtract08Aug2018-14Aug2018.csv",
+      "123JourneyDataExtract15Aug2018-21Aug2018.csv",
+      "124JourneyDataExtract22Aug2018-28Aug2018.csv",
+      "125JourneyDataExtract29Aug2018-04Sep2018.csv",
+      "126JourneyDataExtract05Sep2018-11Sep2018.csv",
+      "127JourneyDataExtract12Sep2018-18Sep2018.csv",
+      "128JourneyDataExtract19Sep2018-25Sep2018.csv",
+      "129JourneyDataExtract26Sep2018-02Oct2018.csv",
+      "130JourneyDataExtract03Oct2018-09Oct2018.csv",
+      "131JourneyDataExtract10Oct2018-16Oct2018.csv",
+      "132JourneyDataExtract17Oct2018-23Oct2018.csv",
+      "133JourneyDataExtract24Oct2018-30Oct2018.csv",
+      "134JourneyDataExtract31Oct2018-06Nov2018.csv",
+      "135JourneyDataExtract07Nov2018-13Nov2018.csv",
+      "136JourneyDataExtract14Nov2018-20Nov2018.csv",
+      "137JourneyDataExtract21Nov2018-27Nov2018.csv",
+      "138JourneyDataExtract28Nov2018-04Dec2018.csv",
+      "139JourneyDataExtract05Dec2018-11Dec2018.csv",
+      "140JourneyDataExtract12Dec2018-18Dec2018.csv",
+      "141JourneyDataExtract19Dec2018-25Dec2018.csv"
+    ]
+  },
+  "stations": {
+    "directory_path": "./stations_data/",
+    "file_name": "cycle_hire-stations.csv"
+  }
+}
