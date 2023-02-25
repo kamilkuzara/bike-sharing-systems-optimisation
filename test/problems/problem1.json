@@ -1,0 +1,68 @@
+{
+  "vehicles": {
+    "number": 8,
+    "capacity": 10
+  },
+  "depot": {
+    "id": 0,
+    "latitude": 51.5321967,
+    "longitude": -0.1117447
+  },
+  "stations": [
+    {
+      "id": 1,
+      "capacity": 19,
+      "inventory": 8,
+      "latitude": 51.52916347,
+      "longitude": -0.109970527,
+      "demand": {
+        "pickups": [2917, 2909, 4246, 1059, 6287, 9508],
+        "returns": [4650, 7126, 186, 4606, 6815, 6407]
+      }
+    },
+    {
+      "id": 2,
+      "capacity": 37,
+      "inventory": 24,
+      "latitude": 51.49960695,
+      "longitude": -0.197574246,
+      "demand": {
+        "pickups": [1074, 2256, 6058, 6508, 3428, 5325],
+        "returns": [5434, 8394, 4127, 6281, 9085, 9388]
+      }
+    },
+    {
+      "id": 3,
+      "capacity": 32,
+      "inventory": 6,
+      "latitude": 51.52128377,
+      "longitude": -0.084605692,
+      "demand": {
+        "pickups": [576, 6366, 4179, 8264, 6748, 1294],
+        "returns": [1074, 2256, 6058, 6508, 3428, 5325]
+      }
+    },
+    {
+      "id": 4,
+      "capacity": 23,
+      "inventory": 7,
+      "latitude": 51.53005939,
+      "longitude": -0.120973687,
+      "demand": {
+        "pickups": [4650, 7126, 186, 4606, 6815, 6407],
+        "returns": [2917, 2909, 4246, 1059, 6287, 9508]
+      }
+    },
+    {
+      "id": 5,
+      "capacity": 27,
+      "inventory": 3,
+      "latitude": 51.49313,
+      "longitude": -0.156876,
+      "demand": {
+        "pickups": [5434, 8394, 4127, 6281, 9085, 9388],
+        "returns": [576, 6366, 4179, 8264, 6748, 1294]
+      }
+    }
+  ]
+}
