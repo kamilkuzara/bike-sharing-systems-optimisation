@@ -101,21 +101,21 @@ def is_valid(problem_specs):
         print(error_message + "Vehicle parameters missing")
         return False
 
-    if not vehicles_valid(problem_specs["vehicles"]):
+    if not vehicles_valid(problem_specs.get("vehicles")):
         return False
 
     if "depot" not in problem_specs:
         print(error_message + "Depot parameters missing")
         return False
 
-    if not depot_valid(problem_specs["depot"]):
+    if not depot_valid(problem_specs.get("depot")):
         return False
 
     if "stations" not in problem_specs:
         print(error_message + "Stations not specified")
         return False
 
-    if not stations_valid(problem_specs["stations"]):
+    if not stations_valid(problem_specs.get("stations")):
         return False
 
     # check if depot ID is different than all the station IDs
