@@ -1,35 +1,33 @@
 error_message = "Error: Invalid problem specification. "
 
+def has_valid_integer_key(object, key):
+    # must contain the key and its value must be a positive integer
+    key_missing = key not in object
+    value = object.get(key)
+    invalid_type = not isinstance(value, int)
+
+    if key_missing or invalid_type:
+        return False
+
+    if value <= 0:
+        return False
+
+    return True
+
 def vehicles_valid(vehicle_specs):
     # must be a dictionary
     if not isinstance(vehicle_specs, dict):
         print(error_message + "Invalid vehicle specification")
         return False
 
-    # must contain the number of vehicles and the number must be a positive integer
-    number_missing = "number" not in vehicle_specs
-    vehicles_number = vehicle_specs.get("number")
-    invalid_number_type = not isinstance(vehicles_number, int)
-
-    if number_missing or invalid_number_type:
-        print(error_message + "Number of vehicles not specified or not an integer")
+    # must contain a valid number of vehicles
+    if not has_valid_integer_key(vehicle_specs, "number"):
+        print(error_message + "Number of vehicles not specified or not a positive integer")
         return False
 
-    if vehicles_number <= 0:
-        print(error_message + "Number of vehicles must be greater than 0")
-        return False
-
-    # must contain the capacity of vehicles and the capacity must be a positive integer
-    capacity_missing = "capacity" not in vehicle_specs
-    capacity = vehicle_specs.get("capacity")
-    invalid_capacity_type = not isinstance(capacity, int)
-
-    if capacity_missing or invalid_capacity_type:
-        print(error_message + "Vehicle capacity not specified or not an integer")
-        return False
-
-    if capacity <= 0:
-        print(error_message + "Vehicle capacity must be greater than 0")
+    # must contain a valid vehicle capacity
+    if not has_valid_integer_key(vehicle_specs, "capacity"):
+        print(error_message + "Vehicle capacity not specified or not a positive integer")
         return False
 
     return True
@@ -68,26 +66,146 @@ def has_valid_longitude(node_specs):
 
     return True
 
-def depot_valid(depot_specs):
+def has_valid_coordinates(vertex):
+    if not has_valid_latitude(vertex) or not has_valid_longitude(vertex):
+        print(error_message + "The coordinates of a vertex are missing or invalid")
+        return False
+
+    return True
+
+def has_valid_id(vertex, used_ids):
+    # must contain the id of the vertex and the id must be an integer
+    id_missing = "id" not in vertex
+    invalid_id_type = not isinstance(vertex.get("id"), int)
+    if id_missing or invalid_id_type:
+        print(error_message + "ID of a vertex not specified or not an integer")
+        return False
+
+    # id must be unique
+    is_unique = vertex.get("id") not in used_ids
+
+    if not is_unique:
+        print(error_message + "Each vertex ID must be unique")
+        return False
+
+    return True
+
+def depot_valid(depot_specs, used_ids = set()):
     # must be a dictionary
     if not isinstance(depot_specs, dict):
         print(error_message + "Invalid depot specification")
         return False
 
-    # must contain the id of the depot and the id must be an integer
-    id_missing = "id" not in depot_specs
-    invalid_id_type = not isinstance(depot_specs.get("id"), int)
-    if id_missing or invalid_id_type:
-        print(error_message + "ID of the depot not specified or not an integer")
+    if not has_valid_id(depot_specs, used_ids):
         return False
 
-    if not has_valid_latitude(depot_specs) or not has_valid_longitude(depot_specs):
-        print(error_message + "The coordinates of the depot are missing or invalid")
+    if not has_valid_coordinates(depot_specs):
         return False
 
     return True
 
-def stations_valid(stations_specs):
+def has_valid_inventory(station, capacity):
+    if not has_valid_integer_key(station, "inventory"):
+        print(error_message + "Inventory of a station not specified or not a positive integer")
+        return False
+
+    inventory = station.get("inventory")
+    if inventory > capacity:
+        print(error_message + "Station inventory cannot be greater than its capacity")
+        return False
+
+    return True
+
+def has_valid_demand(station, demand_array_len):
+    # demand_missing = "demand" not in station  # <- redundant
+    demand = station.get("demand")
+    invalid_or_missing = not isinstance(demand, dict)
+
+    if invalid_or_missing:
+        print(error_message + "Demand of a station not specified or invalid")
+        return False
+
+    pickups = demand.get("pickups")
+    pickups_valid = isinstance(pickups, list)
+
+    returns = demand.get("returns")
+    returns_valid = isinstance(returns, list)
+
+    if not pickups_valid or not returns_valid:
+        print(error_message + "Demand specification is incomplete or invalid")
+        return False
+
+    if len(pickups) == 0 or len(returns) == 0:
+        print(error_message + "'pickups' and 'returns' arrays cannot be empty")
+        return False
+
+    if len(pickups) != len(returns):
+        print(error_message + "'pickups' and 'returns' arrays have to be of the same length")
+        return False
+
+    if demand_array_len != None and len(pickups) != demand_array_len:
+        print(error_message + "Demand for all stations has to be specified with arrays of the same length")
+        return False
+
+    # check if pickups and returns contain only integers
+    for p, r in zip(pickups, returns):
+        if not isinstance(p, int) or not isinstance(r, int):
+            print(error_message + "'pickups' and 'returns' arrays must contain only integer values")
+            return False
+
+    return True
+
+def is_station_valid(station, used_ids, demand_array_len):
+    # must be a dictionary
+    if not isinstance(station, dict):
+        print(error_message + "Invalid station specification")
+        return False
+
+    # check if id valid, i.e. a unique integer
+    if not has_valid_id(station, used_ids):
+        return False
+
+    # check if coordinates valid
+    if not has_valid_coordinates(station):
+        return False
+
+    # check if capacity is valid
+    if not has_valid_integer_key(station, "capacity"):
+        # print(error_message + "Capacity of a station not specified or not a positive integer [station ID: " + station.get("id") + "]")
+        print(error_message + "Capacity of a station not specified or not a positive integer")
+        return False
+
+    # check if inventory is valid, i.e. a positive integer less than or equal to capacity
+    if not has_valid_inventory(station, station.get("capacity")):
+        return False
+
+    # check if demand is valid
+    if not has_valid_demand(station, demand_array_len):
+        return False
+
+    return True
+
+def stations_valid(stations_specs, used_ids = set()):
+    # must be a list
+    if not isinstance(stations_specs, list):
+        print(error_message + "Stations must be given as a list")
+        return False
+
+    # the list cannot be empty
+    if len(stations_specs) == 0:
+        print(error_message + "The list of stations cannot be empty")
+        return False
+
+    # validate each of the stations in the list
+    demand_array_len = None
+    for station in stations_specs:
+        if not is_station_valid(station, used_ids, demand_array_len):
+            return False
+
+        used_ids.add(station.get("id"))
+        if demand_array_len == None:
+            demand_array_len = len(station.get("demand").get("pickups"))
+
     return True
 
 # Check if the file does not violate the requirements of the problem.
@@ -115,9 +233,7 @@ def is_valid(problem_specs):
         print(error_message + "Stations not specified")
         return False
 
-    if not stations_valid(problem_specs.get("stations")):
+    if not stations_valid(problem_specs.get("stations"), { problem_specs.get("depot").get("id") }):
         return False
-
-    # check if depot ID is different than all the station IDs
 
     return True
