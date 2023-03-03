@@ -2,6 +2,7 @@
 
 import sys
 import utils
+from solver import solve
 # import algorithms
 
 
@@ -91,13 +92,16 @@ def main():
     vehicle_num = problem_specs.get("vehicles").get("number")
     vehicle_capacity = problem_specs.get("vehicles").get("capacity")
 
-    print(id_mapping)
-    print("-------------------")
-    print(coordinates)
-    print("-------------------")
-    print(utilisation_data)
-    print("-------------------")
-    print(str(vehicle_num) + "     " + str(vehicle_capacity))
+    # for debugging only:
+    # print(id_mapping)
+    # print("-------------------")
+    # print(coordinates)
+    # print("-------------------")
+    # print(utilisation_data)
+    # print("-------------------")
+    # print(str(vehicle_num) + "     " + str(vehicle_capacity))
+
+    result = solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm = args.get("algorithm"))
 
     # try:
     #
