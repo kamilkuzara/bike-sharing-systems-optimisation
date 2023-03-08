@@ -147,10 +147,14 @@ def has_valid_demand(station, demand_array_len):
         print(error_message + "Demand for all stations has to be specified with arrays of the same length")
         return False
 
-    # check if pickups and returns contain only integers
+    # check if pickups and returns contain only non-negative integers
     for p, r in zip(pickups, returns):
         if not isinstance(p, int) or not isinstance(r, int):
-            print(error_message + "'pickups' and 'returns' arrays must contain only integer values")
+            print(error_message + "'pickups' and 'returns' arrays must contain only non-negative integer values")
+            return False
+
+        if p < 0 or r < 0 :
+            print(error_message + "'pickups' and 'returns' arrays must contain only non-negative integer values")
             return False
 
     return True

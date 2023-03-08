@@ -8,7 +8,7 @@ def simulate_demand_realisation(capacity, inventories, pickups, returns):
     lost_demand = [0] * len(inventories)
 
     for p, r in zip(pickups, returns):
-        pickup_probability = p / (p + r)
+        pickup_probability = p / (p + r) if p + r > 0 else 0
         while p + r > 0:
             # choose whether a pickup or a return is attempted
             action = 0
