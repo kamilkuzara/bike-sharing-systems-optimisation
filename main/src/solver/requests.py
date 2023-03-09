@@ -1,7 +1,7 @@
-import time
 import random
 
-# WARNING: the funcion modifies the following arguments: inventories
+
+# WARNING: the function modifies the following arguments: inventories
 # if these objects need to remain unchanged after the function terminates the function
 # ought to be invoked with copies of those objects, i.e. inventories.copy()
 def simulate_demand_realisation(capacity, inventories, pickups, returns):
@@ -52,20 +52,3 @@ def compute_requests(utilisation_data, max_request):
         requests.append(station_request)
 
     return requests
-
-def solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm = "simulated_annealing_on_SBRP"):
-    # compute the requests for all stations
-    start_time = time.time()
-    requests = compute_requests(utilisation_data, vehicle_capacity)
-    end_time = time.time()
-    requests_computation_time = end_time - start_time
-
-    # print(requests)   # <- for debugging only
-
-    # check if the problem is solvable
-    if abs(sum(requests)) > (vehicle_num * vehicle_capacity):
-        print("The problem cannot be solved. Increase the number of vehicles or their capacity")
-        return None # TODO: need to rethink if None should be returned here
-
-    # TODO:
-    # - choose the appropriate algorithm
