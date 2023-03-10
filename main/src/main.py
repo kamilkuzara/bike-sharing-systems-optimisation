@@ -3,7 +3,6 @@
 import sys
 import utils
 from solver import solve
-# import algorithms
 
 
 # #######################################################################
@@ -103,43 +102,6 @@ def main():
 
     result = solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm = args.get("algorithm"))
 
-    # try:
-    #
-    #     # create appropriate data structures from the parsed problem instance
-    #     print("Performing preprocessing...\t", end = "")
-    #     employees_df, tasks_df, gains = utils.perform_preprocessing(employees, tasks)
-    #     print("Done")
-    #     print(employees_df)
-    #     print(tasks_df)
-    #     print(gains)
-    #
-    #     # solve the problem instance
-    #     print("\nRunning " + algorithms.algorithms[ args["algorithm"] ]["description"] + "...\t", end = "")
-    #     result = algorithms.algorithms[ args["algorithm"] ][ "algorithm" ](employees_df, tasks_df, gains)
-    #     print("Done (solution found)")
-    #
-    #     # validate the solution; if invalid, an exception will be raised
-    #     print("Validating the solution...\t", end = "")
-    #     utils.validate_solution( result["solution"] )
-    #     print("Done (solution valid)")
-    #
-    #     # if we get here, the solution is valid
-    #
-    #     # print out the solution
-    #     print("Solution:\n")
-    #     print( utils.solution_to_string( result["solution"] ) )
-    #
-    #     # compute the statistics
-    #     net_profit = utils.compute_net_profit( [ task for task in tasks if task["name"] in tasks_df.index ], result["total gain"] )
-    #
-    #     # print out the statistics
-    #     print("Total gain: " + str(result["total gain"]) )
-    #     print("Net profit: " + str(net_profit) )
-    #     print("Running time: " + str( round(result["running time"], 5) ) + "sec")
-    #
-    # except Exception as e:
-    #     print("\n")
-    #     print(e)
 
 if __name__ == '__main__':
     main()
