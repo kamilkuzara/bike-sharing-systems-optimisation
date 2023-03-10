@@ -2,7 +2,7 @@
 
 import sys
 import utils
-from solver import solve
+import solver
 
 
 # #######################################################################
@@ -44,7 +44,7 @@ def parse_args(argv):
     if len(argv) >= 3:
         # parse algorithm code
         algo = argv[2]
-        if algo not in algorithms.algorithms:
+        if algo not in solver.algorithms:
             # raise Exception("Incorrect algorithm code\n" + utils.get_help())
             print("Incorrect algorithm code\n" + utils.get_help())
             return None
@@ -100,7 +100,7 @@ def main():
     # print("-------------------")
     # print(str(vehicle_num) + "     " + str(vehicle_capacity))
 
-    result = solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm = args.get("algorithm"))
+    result = solver.solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm = args.get("algorithm_code"))
 
 
 if __name__ == '__main__':
