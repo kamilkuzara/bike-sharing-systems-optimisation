@@ -1,7 +1,7 @@
 import time
 from .requests import compute_requests
 from .distance import compute_distance_matrix
-# from problem import SBRP
+from problem import SBRP
 
 
 # def solve_OnePDTSP(coordinates, requests, vehicle_num, vehicle_capacity):
