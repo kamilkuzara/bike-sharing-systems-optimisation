@@ -100,7 +100,7 @@ def main():
     # print("-------------------")
     # print(str(vehicle_num) + "     " + str(vehicle_capacity))
 
-    result = solver.solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm = args.get("algorithm_code"))
+    result = solver.solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm = args.get("algorithm_code", "1"))
 
 
 if __name__ == '__main__':
