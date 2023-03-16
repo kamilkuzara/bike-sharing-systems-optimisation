@@ -2,6 +2,7 @@ import time
 from .requests import compute_requests
 from .distance import compute_distance_matrix
 from problem import SBRP
+from algorithms import simulated_annealing
 
 
 # def solve_OnePDTSP(coordinates, requests, vehicle_num, vehicle_capacity):
@@ -47,9 +48,6 @@ def solve_multiple_OnePDTSP(coordinates, requests, vehicle_num, vehicle_capacity
 #     #     solution = simulated_annealing(problem)
 #     #     solutions.append(solution)
 #     #
-
-def simulated_annealing(problem):
-    return None
 
 # function only for degugging
 def print_m(matrix):
