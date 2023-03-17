@@ -6,21 +6,6 @@ class SBRP(Problem):
 
     # implements the generate_solution() method from the class Problem
     def generate_solution(self):
-        # # generate initial paths for the vehicles; note: not every vehicle has to visit stations
-        # vehicle_paths = [ [0] for vehicle in range(0, self._vehicle_num) ]
-        #
-        # # assign each station to a vehicle
-        # net_requests = [ 0 for vehicle in range(0, self._vehicle_num) ]
-        # assignments = [ [] for vehicle in range(0, self._vehicle_num) ]
-        #
-        # unassigned = [ True for station in range(0, len(self._requests)) ]
-        # while sum(unassigned) > 0:
-        #     for station_status in unassigned:
-        #
-        #
-        # # compute the cost of the solution
-        # cost = 0
-
         # assign each station to one of vehicle_num possible groups
         station_assignments = tabu_search(self.requests, self.vehicle_num, self.vehicle_capacity)
         # print(station_groups)     # <- for debugging only
