@@ -36,6 +36,9 @@ class SBRP(Problem):
                 # find a valid path through the group
                 path = depth_first_search([0], group_distance_matrix, group_requests, 0, self.vehicle_capacity, self.vehicle_capacity)
 
+                if path is None:    # should not happen if the grouping was done correctly
+                    return None
+
                 # map the vertex indices from group back to general
                 # NOTE: this is where it is important that the group is sorted
                 # depot (vertex 0) will be mapped back to itself correctly
