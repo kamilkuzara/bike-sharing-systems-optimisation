@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 class Solution(ABC):
     @staticmethod
     @abstractmethod
-    def compute_cost():
+    def compute_cost(vehicle_paths, distance_matrix):
         return
 
     @staticmethod
