@@ -39,6 +39,9 @@ def update_phase_length(phase_length):
 def simulated_annealing(problem):
     # compute the initial solution/configuration
     current_config = problem.generate_solution()
+    if current_config is None:
+        return None
+
     best_config = current_config
 
     phase_length = hyperparameters["initial_phase_length"]
