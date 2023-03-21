@@ -4,9 +4,9 @@ import random
 
 hyperparameters = {
     "initial_probability_threshold": 0.95,
-    "alpha": 0.75,   # rate of change for temperature, should be within range (0.8, 0.99)
+    "alpha": 0.95,   # rate of change for temperature, should be within range (0.8, 0.99)
     "beta": 1.05,    # rate of change for phase length, should be > 1
-    "min_temp": 5,   # termination criterion, we stop the search when the temperature gets below this value
+    "min_temp_percentage": 0.005,   # used to determine the termination criterion, what percentage of the initial temperature is the minimum temperature
     "initial_phase_length": 10
 }
 
@@ -22,6 +22,10 @@ hyperparameters = {
 # @return initial temperature that accepts all neighbours with at least the threshold probability
 def compute_initial_temp(max_cost_difference):
     return -1 * max_cost_difference / math.log( hyperparameters["initial_probability_threshold"] )
+
+
+def compute_minimum_temp(temp):
+    return hyperparameters["min_temp_percentage"] * temp
 
 
 def update_temp(temp):
@@ -46,11 +50,15 @@ def simulated_annealing(problem):
 
     phase_length = hyperparameters["initial_phase_length"]
     temp = compute_initial_temp(current_config.get_max_cost_difference())
+    min_temp = compute_minimum_temp(temp)
 
     finished = False
     while not finished:
         for i in range(phase_length):
             new_config = current_config.generate_neighbour()
+            if new_config is None:
+                print("Could not find a neighbour")
+                return best_config
 
             if new_config.cost < current_config.cost: # remember, lower cost is better
                 # accept the new configuration, i.e. move to this solution
@@ -64,7 +72,7 @@ def simulated_annealing(problem):
         phase_length = update_phase_length(phase_length)
         temp = update_temp(temp)
 
-        if temp < hyperparameters["min_temp"]:  # stopping criterion for the search
+        if temp < min_temp:  # stopping criterion for the search
             finished = True
 
     return best_config
