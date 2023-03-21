@@ -3,6 +3,13 @@ from .SBRP_Solution import SBRP_Solution
 from .utils import depth_first_search, tabu_search
 
 class SBRP(Problem):
+    def __init__(self, distance_matrix, requests, vehicle_num, vehicle_capacity):
+        self._vehicle_num = vehicle_num
+        super().__init__(distance_matrix, requests, vehicle_capacity)
+
+    @property
+    def vehicle_num(self):
+        return self._vehicle_num
 
     # implements the generate_solution() method from the class Problem
     def generate_solution(self):

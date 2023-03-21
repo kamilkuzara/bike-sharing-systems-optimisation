@@ -48,10 +48,6 @@ class Solution(ABC):
     def cost(self):
         return self._cost
 
-    @cost.setter
-    def cost(self, new_cost):
-        self._cost = new_cost
-
     @abstractmethod
     def is_valid(self):
         return
