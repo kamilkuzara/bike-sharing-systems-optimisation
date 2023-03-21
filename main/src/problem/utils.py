@@ -130,7 +130,3 @@ def tabu_search(requests, vehicle_num, vehicle_capacity):
         return assignments
     else:
         return None
-
-
-def is_path_valid(path, requests):
-    pass
