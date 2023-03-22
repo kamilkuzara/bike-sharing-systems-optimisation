@@ -1,7 +1,8 @@
 import time
 from .requests import compute_requests
 from .distance import compute_distance_matrix
-from problem import SBRP
+from .grouping import compute_station_groups
+from problem import SBRP, OnePDTSP, SBRP_Solution
 from algorithms import simulated_annealing
 
 
@@ -20,34 +21,45 @@ from algorithms import simulated_annealing
 #     return solution, solution_time
 #
 def solve_multiple_OnePDTSP(coordinates, requests, vehicle_num, vehicle_capacity):
-    pass
-#     # divide the stations into groups
-#     groups = compute_station_groups(coordinates, requests)
-#
-#     # Note: a mapping of groups is needed so that the solutions can be combined in the final step
-#
-#     solutions = []
-#     total_time = 0
-#     for group in groups:
-#         # solve a single OnePDTSP
-#         solution, solution_time = solve_OnePDTSP()
-#         solutions.append(solution)
-#         total_time += solution_time
-#
-#     # combine the OnePDTSP solutions into a SBRP solution
-#
-#     return final_solution, total_time
-#
-#     # # TODO:
-#     # # compute distance matrix for each group
-#     # # create an instance of the OnePDTSP for each group of stations
-#     #
-#     # # solve each of the smaller OnePDTSP problems
-#     # solutions = []
-#     # for problem in problems:
-#     #     solution = simulated_annealing(problem)
-#     #     solutions.append(solution)
-#     #
+    # compute the distance matrix
+    distance_matrix = compute_distance_matrix(coordinates)
+
+    # compute the distance matrix only for stations
+    stations_distance_matrix = [ row[1:] for row in distance_matrix[1:] ]
+
+    # divide the stations into groups
+    group_assignments, num_groups = compute_station_groups(coordinates[1:], stations_distance_matrix, requests, vehicle_num, vehicle_capacity)
+
+    if group_assignments is None:
+        return None
+
+    # compute the groups
+    groups = [ [0] for g in range(0, num_groups) ]
+    for station, group in enumerate(group_assignments):
+        vertex = station + 1
+        groups[group].append(vertex)
+
+    # solve OnePDTSP on each group
+    solutions = []
+    for group in groups:
+        # compute the distance matrix for the group of vertices
+        group_distance_matrix = [ [dist for w, dist in enumerate(distances) if w in group] for v, distances in enumerate(distance_matrix) if v in group ]
+
+        # compute the list of requests for the stations in the group
+        group_requests = [ r for station, r in enumerate(requests) if station + 1 in group ]
+
+        problem = OnePDTSP(group_distance_matrix, group_requests, vehicle_capacity)
+
+        solution = simulated_annealing(problem)
+        if solution is None:
+            return None
+
+        solutions.append(solution)
+
+    # combine the OnePDTSP solutions into a SBRP solution
+    final_solution = SBRP_Solution.construct_from_OnePDTSPs(solutions, groups)
+
+    return final_solution
 
 # function only for degugging
 def print_m(matrix):
