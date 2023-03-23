@@ -10,6 +10,10 @@ class OnePDTSP_Solution(Solution):
         self._vehicle_path = vehicle_path
         super().__init__(problem, cost)
 
+    @property
+    def vehicle_path(self):
+        return self._vehicle_path
+
     def is_valid(self):
         pass
 

@@ -57,7 +57,7 @@ def solve_multiple_OnePDTSP(coordinates, requests, vehicle_num, vehicle_capacity
         solutions.append(solution)
 
     # combine the OnePDTSP solutions into a SBRP solution
-    final_solution = SBRP_Solution.construct_from_OnePDTSPs(solutions, groups)
+    final_solution = SBRP_Solution.construct_from_OnePDTSPs(solutions, groups, SBRP(distance_matrix, requests, vehicle_num, vehicle_capacity))
 
     return final_solution
 

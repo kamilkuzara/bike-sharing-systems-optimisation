@@ -11,6 +11,27 @@ class SBRP_Solution(Solution):
 
         return cost
 
+    @staticmethod
+    def construct_from_OnePDTSPs(solutions, groups, problem):
+        # reconstruct the solutions
+        reconstructed_paths = []
+        total_cost = 0
+        for solution, group in zip(solutions, groups):
+            total_cost += solution.cost
+
+            reconstructed = []
+            for vertex in solution.vehicle_path:
+                reconstructed.append(group[vertex])
+
+            reconstructed_paths.append(reconstructed)
+
+        if len(reconstructed_paths) < problem.vehicle_num:
+            missing_vehicles_num = problem.vehicle_num - len(reconstructed_paths)
+            missing_paths = [ [0] for v in range(0, missing_vehicles_num) ]
+            reconstructed_paths += missing_paths
+
+        return SBRP_Solution(problem, reconstructed_paths, total_cost)
+
     def __init__(self, problem, vehicle_paths, cost):
         self._vehicle_paths = vehicle_paths
         super().__init__(problem, cost)
