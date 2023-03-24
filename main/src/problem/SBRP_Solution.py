@@ -36,6 +36,18 @@ class SBRP_Solution(Solution):
         self._vehicle_paths = vehicle_paths
         super().__init__(problem, cost)
 
+    @property
+    def vehicle_paths(self):
+        return self._vehicle_paths
+
+    def get_initial_loads(self):
+        init_loads = []
+        for path in self._vehicle_paths:
+            load = Solution.compute_initial_load(path, self._problem.requests, self._problem.vehicle_capacity)
+            init_loads.append(load)
+
+        return init_loads
+
     def is_valid(self):
         pass
         # for each path check if it's valid

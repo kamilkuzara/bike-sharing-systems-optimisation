@@ -40,6 +40,34 @@ class Solution(ABC):
 
         return True
 
+    @staticmethod
+    def compute_initial_load(path, requests, vehicle_capacity):
+        min_load = 0
+        max_load = vehicle_capacity
+
+        net_request = 0
+
+        for vertex in path[1:]:
+            station = vertex - 1
+            request = requests[station]
+            min_required_load = max(0, 0 - request)
+            max_required_load = min(vehicle_capacity, vehicle_capacity - request)
+
+            # # NOTE: uncomment this snippet if the path is not guaranteed to be valid
+            # move_allowed = (min_load >= min_required_load and min_load <= max_required_load) or (max_load >= min_required_load and max_load <= max_required_load)
+            #
+            # if not move_allowed:
+            #     return None
+
+            min_load = max(min_load, min_required_load) + request
+            max_load = min(max_load, max_required_load) + request
+
+            net_request += request
+
+        initial_load = min_load - net_request
+
+        return initial_load
+
     def __init__(self, problem, cost):
         self._problem = problem
         self._cost = cost

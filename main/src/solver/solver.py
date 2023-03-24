@@ -95,7 +95,7 @@ def solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorith
     start_time = time.time()
     requests = compute_requests(utilisation_data, vehicle_capacity)
     end_time = time.time()
-    requests_computation_time = end_time - start_time
+    requests_time = end_time - start_time
 
     # print(requests)   # <- for debugging only
 
@@ -110,5 +110,17 @@ def solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorith
     end_time = time.time()
     solution_time = end_time - start_time
 
-    # TODO:
-    # - return the results in an appropriate form
+    if solution is None:
+        return None
+
+    # return the results as a dictionary
+    result = {
+        "requests": requests,
+        "requests_time": requests_time,
+        "solution": list( zip(solution.get_initial_loads(), solution.vehicle_paths) ),
+        "solution_time": solution_time,
+        "cost": solution.cost,
+        "total_time": requests_time + solution_time
+    }
+
+    return result
