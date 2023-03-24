@@ -102,6 +102,30 @@ def main():
 
     result = solver.solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm = args.get("algorithm_code", "1"))
 
+    if result is None:
+        print("Solution not found")
+        return
+
+    # print(result)     # <- for debugging only
+
+    # construct a dictionary in the JSON format from the result
+    result = utils.perform_postprocessing(result, id_mapping)
+
+    # # for debugging only:
+    # print("\n\n\n")
+    # print(result)
+    # print("\n\n\n")
+    # print(json.dumps(result, indent="  "))
+
+    # print the result
+    print(utils.stringify_result(result))
+
+    # if solution file given, save the result
+    solution_filename = args.get("solution_file_path")
+    if solution_filename is not None:
+        print("Saving solution to a file: " + solution_filename)
+        utils.save_to_file(result, solution_filename)
+
 
 if __name__ == '__main__':
     main()
