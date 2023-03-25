@@ -20,7 +20,7 @@ from algorithms import simulated_annealing
 #
 #     return solution, solution_time
 #
-def solve_multiple_OnePDTSP(coordinates, requests, vehicle_num, vehicle_capacity):
+def solve_multiple_OnePDTSP(coordinates, requests, vehicle_num, vehicle_capacity, hyperparameters):
     # compute the distance matrix
     distance_matrix = compute_distance_matrix(coordinates)
 
@@ -50,7 +50,7 @@ def solve_multiple_OnePDTSP(coordinates, requests, vehicle_num, vehicle_capacity
 
         problem = OnePDTSP(group_distance_matrix, group_requests, vehicle_capacity)
 
-        solution = simulated_annealing(problem)
+        solution = simulated_annealing(problem, hyperparameters)
         if solution is None:
             return None
 
@@ -67,7 +67,7 @@ def print_m(matrix):
         print(line)
     print()
 
-def solve_SBRP(coordinates, requests, vehicle_num, vehicle_capacity):
+def solve_SBRP(coordinates, requests, vehicle_num, vehicle_capacity, hyperparameters):
     # compute the distance matrix
     distance_matrix = compute_distance_matrix(coordinates)
     # print_m(distance_matrix)  # <- for debugging only
@@ -75,22 +75,36 @@ def solve_SBRP(coordinates, requests, vehicle_num, vehicle_capacity):
     # create an instance of the problem
     problem = SBRP(distance_matrix, requests, vehicle_num, vehicle_capacity)
 
-    solution = simulated_annealing(problem)
+    solution = simulated_annealing(problem, hyperparameters)
 
     return solution
 
 algorithms = {
     "1": {
         "algorithm": solve_SBRP,
-        "description": "Static Bike Repositioning Problem - Simulated Annealing algorithm"
+        "description": "Static Bike Repositioning Problem - Simulated Annealing algorithm",
+        "default_hyperparameters": {
+            "initial_probability_threshold": 0.95,
+            "alpha": 0.95,   # rate of change for temperature, should be within range (0.8, 0.99)
+            "beta": 1.05,    # rate of change for phase length, should be > 1
+            "min_temp_percentage": 0.005,   # used to determine the termination criterion, what percentage of the initial temperature is the minimum temperature
+            "initial_phase_length": 10
+        }
     },
     "2": {
         "algorithm": solve_multiple_OnePDTSP,
-        "description": "multiple instances of One-Commodity Pickup-Delivery TSP - Simulated Annealing algorithm"
+        "description": "multiple instances of One-Commodity Pickup-Delivery TSP - Simulated Annealing algorithm",
+        "default_hyperparameters": {
+            "initial_probability_threshold": 0.95,
+            "alpha": 0.95,   # rate of change for temperature, should be within range (0.8, 0.99)
+            "beta": 1.05,    # rate of change for phase length, should be > 1
+            "min_temp_percentage": 0.005,   # used to determine the termination criterion, what percentage of the initial temperature is the minimum temperature
+            "initial_phase_length": 10
+        }
     }
 }
 
-def solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm = "1"):
+def solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm = "1", hyperparameters = "default"):
     # compute the requests for all stations
     start_time = time.time()
     requests = compute_requests(utilisation_data, vehicle_capacity)
@@ -102,11 +116,19 @@ def solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorith
     # check if the problem is solvable
     if abs(sum(requests)) > (vehicle_num * vehicle_capacity):
         print("The problem cannot be solved. Increase the number of vehicles or their capacity")
-        return None # TODO: need to rethink if None should be returned here
+        return None
 
-    # choose and run the appropriate solution approach
+    # choose the correct solution approach and set of hyperparameters
+    solver = algorithms.get(algorithm).get("algorithm")
+    if hyperparameters == "default":
+        hyperparameters = algorithms.get(algorithm).get("default_hyperparameters")
+    # # NOTE: if hyperparameters were given as an argument, they should be validated,
+    # otherwise the SA code might break;
+    # this is left for future development
+
+    # run the appropriate solution approach
     start_time = time.time()
-    solution = algorithms.get(algorithm).get("algorithm")(coordinates, requests, vehicle_num, vehicle_capacity)
+    solution = solver(coordinates, requests, vehicle_num, vehicle_capacity, hyperparameters)
     end_time = time.time()
     solution_time = end_time - start_time
 

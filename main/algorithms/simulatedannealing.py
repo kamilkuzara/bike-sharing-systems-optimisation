@@ -2,13 +2,13 @@ import math
 import random
 
 
-hyperparameters = {
-    "initial_probability_threshold": 0.95,
-    "alpha": 0.95,   # rate of change for temperature, should be within range (0.8, 0.99)
-    "beta": 1.05,    # rate of change for phase length, should be > 1
-    "min_temp_percentage": 0.005,   # used to determine the termination criterion, what percentage of the initial temperature is the minimum temperature
-    "initial_phase_length": 10
-}
+# hyperparameters = {
+#     "initial_probability_threshold": 0.95,
+#     "alpha": 0.95,   # rate of change for temperature, should be within range (0.8, 0.99)
+#     "beta": 1.05,    # rate of change for phase length, should be > 1
+#     "min_temp_percentage": 0.005,   # used to determine the termination criterion, what percentage of the initial temperature is the minimum temperature
+#     "initial_phase_length": 10
+# }
 
 
 # Compute the initial temperature such that the probability for accepting all neighbours
@@ -20,27 +20,27 @@ hyperparameters = {
 # difference.
 #
 # @return initial temperature that accepts all neighbours with at least the threshold probability
-def compute_initial_temp(max_cost_difference):
-    return -1 * max_cost_difference / math.log( hyperparameters["initial_probability_threshold"] )
+def compute_initial_temp(max_cost_difference, initial_probability_threshold):
+    return -1 * max_cost_difference / math.log( initial_probability_threshold )
 
 
-def compute_minimum_temp(temp):
-    return hyperparameters["min_temp_percentage"] * temp
+def compute_minimum_temp(temp, min_temp_percentage):
+    return min_temp_percentage * temp
 
 
-def update_temp(temp):
-    return hyperparameters["alpha"] * temp
+def update_temp(temp, alpha):
+    return alpha * temp
 
 
-def update_phase_length(phase_length):
-    return math.ceil( hyperparameters["beta"] * phase_length )
+def update_phase_length(phase_length, beta):
+    return math.ceil( beta * phase_length )
 
 
 # def compute_initial_phase_length():
 #     pass
 
 
-def simulated_annealing(problem):
+def simulated_annealing(problem, hyperparameters):
     # compute the initial solution/configuration
     current_config = problem.generate_solution()
     if current_config is None:
@@ -48,9 +48,9 @@ def simulated_annealing(problem):
 
     best_config = current_config
 
-    phase_length = hyperparameters["initial_phase_length"]
-    temp = compute_initial_temp(current_config.get_max_cost_difference())
-    min_temp = compute_minimum_temp(temp)
+    phase_length = hyperparameters.get("initial_phase_length")
+    temp = compute_initial_temp(current_config.get_max_cost_difference(), hyperparameters.get("initial_probability_threshold"))
+    min_temp = compute_minimum_temp(temp, hyperparameters.get("min_temp_percentage"))
 
     finished = False
     while not finished:
@@ -69,8 +69,8 @@ def simulated_annealing(problem):
             elif math.exp( (current_config.cost - new_config.cost) / temp ) >= random.random():
                 current_config = new_config
 
-        phase_length = update_phase_length(phase_length)
-        temp = update_temp(temp)
+        phase_length = update_phase_length(phase_length, hyperparameters.get("beta"))
+        temp = update_temp(temp, hyperparameters.get("alpha"))
 
         if temp < min_temp:  # stopping criterion for the search
             finished = True
