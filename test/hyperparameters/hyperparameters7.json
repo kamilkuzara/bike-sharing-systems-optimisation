@@ -1,0 +1,7 @@
+{
+  "initial_probability_threshold": 0.95,
+  "alpha": 0.8,
+  "beta": 1.2,
+  "min_temp_percentage": 0.01,
+  "initial_phase_length": 10
+}

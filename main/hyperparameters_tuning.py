@@ -127,6 +127,7 @@ def main():
 
     hyperparameters_dir = args.get("hyperparameters_dir") + "/"
     hyperparameter_files = os.listdir(hyperparameters_dir)[::-1]
+    hyperparameter_files = [ file for file in hyperparameter_files if file[len(file) - 5:] == ".json" ]
 
     for file in hyperparameter_files:
         stats_df = test_hyperparameter_set(stats_df, hyperparameters_dir, file, problem_dir, problem_files, solution_dir)
