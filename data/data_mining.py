@@ -1,6 +1,8 @@
 import pandas as pd
 import json
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FixedLocator, FixedFormatter
+import geopandas as gpd
 
 def get_data_file_paths(data_file_registry_path = "./data_files.json"):
     with open(data_file_registry_path) as path_registry_file:
@@ -18,7 +20,7 @@ def get_data_file_paths(data_file_registry_path = "./data_files.json"):
 def load_journeys_data(file_paths = ["./journeys.csv"]):
     journey_dataframes = []
     for file in file_paths:
-        df = pd.read_csv(file, usecols=["Duration", "End Date", "EndStation Id", "Start Date", "StartStation Id"])
+        df = pd.read_csv(file, usecols=["Duration", "End Date", "EndStation Id", "Start Date", "StartStation Id"], parse_dates=["End Date", "Start Date"])
         journey_dataframes.append(df)
 
     journeys_output_df = pd.concat(journey_dataframes, ignore_index = True)
@@ -106,7 +108,7 @@ def get_journey_durations_minutes(journeys_df):
 
     return durations
 
-def compute_journeys_durations_distribution(durations):
+def compute_journey_durations_distribution(durations):
     # compute the distribution of journey durations
     distribution = durations.value_counts()
 
@@ -125,6 +127,43 @@ def percentage_journeys_lt_hour(distribution):
     total_journeys = distribution.sum()
 
     return short_journeys / total_journeys * 100
+
+def compute_journeys_per_weekday(journeys_df):
+    days = [0,1,2,3,4,5,6]
+
+    journeys_per_weekday = []
+    for day in days:
+        day_df = journeys_df.loc[ journeys_df["Day of week"] == day ]
+        hourly_distribution = day_df["Hour"].value_counts().reindex(list(range(0,24)),fill_value=0)
+        journeys_per_weekday.append( list(hourly_distribution.values) )
+
+    return journeys_per_weekday
+
+def compute_activity_per_station(journeys_df, stations_df):
+    station_IDs = stations_df["id"].values
+
+    num_days = len(set(journeys_df["Start Date"].values).union(set(journeys_df["End Date"].values)))
+
+    pickups = []
+    returns = []
+    total_activity = []
+    total_net_flow = []
+    avg_net_flow = []
+    for id in station_IDs:
+        station_pickups = len(journeys_df.loc[ journeys_df["StartStation Id"] == id ])
+        pickups.append(station_pickups)
+
+        station_returns = len(journeys_df.loc[ journeys_df["EndStation Id"] == id ])
+        returns.append(station_returns)
+
+        total_activity.append( station_pickups + station_returns )
+
+        station_net_flow = station_returns - station_pickups
+        total_net_flow.append( station_net_flow )
+        avg_net_flow.append( station_net_flow / num_days )
+
+    return pickups, returns, total_activity, total_net_flow, avg_net_flow
+
 
 def plot_journeys_durations_distribution(distribution):
     X = distribution.index.to_list()
@@ -182,5 +221,113 @@ def plot_stations_pickups_returns(journeys_df, stations_df):
     plt.title("Total number of returns in the measured timespan")
     plt.xlabel("Station ID")
     plt.ylabel("Number of returns")
+
+    plt.show()
+
+def plot_journeys_per_weekday(journeys_per_weekday):
+    # Y = [ val for day in journeys_per_weekday for val in day ]
+    # X = list( range(0, len(Y)) )
+    #
+    # plt.plot(X,Y, marker="o")
+    #
+    # plt.title("Journeys in the course of week")
+    # plt.xlabel("Time of week")
+    # plt.ylabel("Number of journeys")
+    #
+    # for i in range(0, len(X)-1, 48):
+    #     plt.axvspan(i, i+24, facecolor='b', alpha=0.15, zorder=-100)
+    #
+    # plt.show()
+
+    # ###########################################################################
+
+    my_xticks1 = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday' ,'Saturday' ,'Sunday']
+    my_major_xticks = ['00' , '00','00','00','00','00' , '00' , '00']
+    my_minor_xticks = [0 , 6 , 12 , 18 , 24 , 30 , 36 , 42 , 48 , 54 , 60 , 66 , 72 , 78 , 84 , 90 , 96 , 102 , 108 , 114 , 120 , 126 , 132 , 138 , 144 , 150 , 156 , 162 , 168]
+    my_minor_label = ['06' , '12' , '18' , '06' , '12' , '18' , '06' , '12' , '18' ,'06' , '12' , '18', '06' , '12' , '18' , '06' , '12' , '18' , '06' , '12' , '18']
+
+    fig, ax = plt.subplots()
+
+    Y = [ val for day in journeys_per_weekday for val in day ]
+    X = list( range(0, len(Y)) )
+
+    # ax.plot(X,Y, marker="o")
+    ax.plot(X,Y)
+
+    plt.title("Journeys in the course of week")
+    plt.xlabel("Time of week")
+    plt.ylabel("Number of journeys")
+
+    for i in range(24, len(X)-1, 48):
+        plt.axvspan(i, i+24, facecolor='b', alpha=0.15, zorder=-100)
+
+    plt.xlim(-1,168)
+    plt.ylim(0, 90_000)
+
+    #set the major xticks by its location and the location is presented by the length of the list
+    # plt.xticks([0,23,47,71,95,119,143,167] , my_major_xticks)
+    plt.xticks([0,24,48,72,96,120,144,168] , my_major_xticks)
+    # both for x and y axis
+
+    ax.tick_params('both', length=7, width=1, which='major')
+    plt.grid(which="both")
+
+    # control the minor locator and added a fixedlocator function to it
+    ax.xaxis.set_minor_locator(FixedLocator(my_minor_xticks))
+    # add the label to the minor locator
+    ax.xaxis.set_minor_formatter(FixedFormatter(my_minor_label))
+
+    num = 11
+    for i, xpos in enumerate(ax.get_xticks()):
+        if(i == 7):
+            break;
+        ax.text(num,450, my_xticks1[i],
+                size = 10, ha = 'center')
+        num = num + 24
+
+    plt.show()
+
+def plot_stations_map(stations_df, col):
+    # map = gpd.read_file("./data_visualisation/shapefiles/v3/London_Borough_Excluding_MHW.shp")
+    # map = map.to_crs(epsg=4326)
+    #
+    # s_gdf = gpd.GeoDataFrame(stations_df, geometry = gpd.points_from_xy(stations_df["long"], stations_df["lat"]))
+    #
+    # ax = map["geometry"].plot()
+    #
+    # s_gdf["geometry"].plot(ax=ax, color="green")
+
+    map = gpd.read_file("./data_visualisation/shapefiles/v4/London_buildings.shp")
+    map = map.to_crs(epsg=4326)
+
+    s_gdf = gpd.GeoDataFrame(stations_df, geometry = gpd.points_from_xy(stations_df["long"], stations_df["lat"]))
+
+    fig, ax = plt.subplots()
+
+    map.plot(ax=ax, alpha=0.4)
+
+    s_gdf.plot(column=col, ax=ax, cmap="Oranges", legend=True, legend_kwds={"shrink": 0.3})
+
+    ax.set_facecolor("lightblue")
+    ax.set_alpha(0.15)
+
+    plt.show()
+
+def plot_map(map, s_gdf, col, colourmap, title):
+    fig, ax = plt.subplots()
+
+    map.plot(ax=ax, alpha=0.6)
+
+    s_gdf.plot(column=col, ax=ax, cmap=colourmap, legend=True, legend_kwds={"shrink": 0.3})
+
+    ax.set_facecolor("lightblue")
+    ax.set_alpha(0.3)
+
+    plt.xlim(-0.2560, 0.0225)
+    plt.ylim(51.4130, 51.5820)
+
+    plt.title(title)
+    plt.xlabel("longitude")
+    plt.ylabel("latitude")
 
     plt.show()
