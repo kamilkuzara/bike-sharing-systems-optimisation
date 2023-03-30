@@ -164,6 +164,35 @@ def compute_activity_per_station(journeys_df, stations_df):
 
     return pickups, returns, total_activity, total_net_flow, avg_net_flow
 
+def compute_demand_per_station(journeys_df, stations_df, day):
+    pickups_df = journeys_df[ journeys_df["Start Date"] == day ]
+    returns_df = journeys_df[ journeys_df["End Date"] == day ]
+
+    station_IDs = list(stations_df["id"].values)
+
+    hours = [ (4 + i) % 24 for i in range(0, 24) ]
+
+    demand = {}
+    for s_id in station_IDs:
+        station_pickups_df = pickups_df[ pickups_df["StartStation Id"] == s_id ]
+        station_returns_df = returns_df[ returns_df["EndStation Id"] == s_id ]
+
+        station_pickups = []
+        station_returns = []
+
+        for h in hours:
+            hourly_pickups = len(station_pickups_df[ station_pickups_df["Start Hour"] == h ])
+            hourly_returns = len(station_returns_df[ station_returns_df["End Hour"] == h ])
+
+            station_pickups.append(hourly_pickups)
+            station_returns.append(hourly_returns)
+
+        demand[str(s_id)] = {
+            "pickups": station_pickups,
+            "returns": station_returns
+        }
+
+    return demand
 
 def plot_journeys_durations_distribution(distribution):
     X = distribution.index.to_list()
