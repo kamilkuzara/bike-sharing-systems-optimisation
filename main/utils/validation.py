@@ -182,7 +182,7 @@ def is_station_valid(station, used_ids, demand_array_len):
         print(error_message + "Capacity of a station not specified or not a positive integer")
         return False
 
-    # check if inventory is valid, i.e. a positive integer less than or equal to capacity
+    # check if inventory is valid, i.e. a non-negative integer less than or equal to capacity
     if not has_valid_inventory(station, station.get("capacity")):
         # print(station)    # <- for debugging only
         return False
