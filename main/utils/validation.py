@@ -105,13 +105,16 @@ def depot_valid(depot_specs, used_ids = set()):
     return True
 
 def has_valid_inventory(station, capacity):
-    if not has_valid_integer_key(station, "inventory"):
-        print(error_message + "Inventory of a station not specified or not a positive integer")
+    # must contain the key and its value must be an integer
+    invalid = not isinstance(station.get("inventory"), int)
+
+    if invalid:
+        print(error_message + "Inventory of a station not specified or not an integer")
         return False
 
     inventory = station.get("inventory")
-    if inventory > capacity:
-        print(error_message + "Station inventory cannot be greater than its capacity")
+    if inventory > capacity or inventory < 0:
+        print(error_message + "Station inventory cannot be less than 0 or greater than station capacity")
         return False
 
     return True
@@ -181,6 +184,7 @@ def is_station_valid(station, used_ids, demand_array_len):
 
     # check if inventory is valid, i.e. a positive integer less than or equal to capacity
     if not has_valid_inventory(station, station.get("capacity")):
+        # print(station)    # <- for debugging only
         return False
 
     # check if demand is valid
