@@ -167,5 +167,6 @@ cython_debug/
 
 
 # Custom to the project
-*/journey_data
-*/stations_data
+*/journey_data/*.csv
+*/stations_data/*.csv
+*/stations_data/*.xml
