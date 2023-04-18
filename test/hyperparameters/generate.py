@@ -2,10 +2,11 @@ import json
 
 init_prob = 0.95
 init_phase = 10
+alpha_values = [0.8, 0.95] # [0.8, 0.85, 0.95]
+beta_values = [1.05, 1.15] # [1.05, 1.10, 1.20]
+min_temp_values = [0.01, 0.005] # [0.01, 0.005, 0.001]
+
 params_sets = []
-alpha_values = [0.8, 0.85, 0.95]
-beta_values = [1.05, 1.10, 1.20]
-min_temp_values = [0.01, 0.005, 0.001]
 
 for a_val in alpha_values:
     for b_val in beta_values:
