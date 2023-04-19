@@ -60,7 +60,8 @@ def run_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, 
 def test_single_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm, algorithm_name, hyperparameters):
     print("    " + algorithm_name + " - attempts: ", end="")
     # result = None
-    result = {}
+    manager = multiprocessing.Manager()
+    result = manager.dict()
     num_attempts = 0
     timed_out = False
     while num_attempts < 2 and result.get("result") is None:
