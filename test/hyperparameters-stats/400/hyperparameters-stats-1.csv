@@ -1,0 +1,10 @@
+,hyperparameters_file,problem_name,SBRP_num_attempts,SBRP_cost,SBRP_solution_time,SBRP_timed_out,OnePDTSP_num_attempts,OnePDTSP_cost,OnePDTSP_solution_time,OnePDTSP_timed_out
+0,hyperparameters1.json,problem16,1,2265424.488,9.978,False,2,-,-,False
+1,hyperparameters1.json,problem22,1,2380880.821,9.681,False,2,-,-,False
+2,hyperparameters1.json,problem15,1,2324857.532,12.086,False,2,-,-,False
+3,hyperparameters2.json,problem16,1,2288639.306,11.23,False,2,-,-,False
+4,hyperparameters2.json,problem22,1,2282279.576,12.334,False,2,-,-,False
+5,hyperparameters2.json,problem15,1,2258632.536,12.428,False,2,-,-,False
+6,hyperparameters3.json,problem16,1,2173461.675,12.169,False,2,-,-,False
+7,hyperparameters3.json,problem22,1,2216743.666,12.127,False,2,-,-,False
+8,hyperparameters3.json,problem15,1,2162724.858,12.962,False,2,-,-,False
