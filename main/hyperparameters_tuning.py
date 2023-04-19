@@ -3,6 +3,8 @@
 import sys
 import os
 import json
+import random
+import multiprocessing
 
 import utils
 import solver
@@ -33,12 +35,15 @@ def parse_args(argv):
 
     return args
 
-def process_result(result, id_mapping, solution_dir, problem_name, algo, hyperparameters_filename):
+def process_result(result, id_mapping, solution_dir, problem_name, algo, hyperparameters_filename, timed_out):
     solution_filename = solution_dir + hyperparameters_filename + "-" + problem_name + "-solution_" + algo + ".json"
 
     if result is None:
-        utils.save_to_file({}, solution_filename)
-        return [None, None]
+        res = {}
+        if timed_out:
+            res["timed_out"] = timed_out
+        utils.save_to_file(res, solution_filename)
+        return [None, None, timed_out]
 
     # construct a dictionary in the JSON format from the result
     result = utils.perform_postprocessing(result, id_mapping)
@@ -47,19 +52,38 @@ def process_result(result, id_mapping, solution_dir, problem_name, algo, hyperpa
     cost = round(result.get("cost"), 3)
     solution_time = round(result.get("solution_time"), 3)
 
-    return [cost, solution_time]
+    return [cost, solution_time, timed_out]
+
+def run_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm, hyperparameters, result):
+    result["result"] = solver.solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm, hyperparameters)
 
 def test_single_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm, algorithm_name, hyperparameters):
     print("    " + algorithm_name + " - attempts: ", end="")
-    result = None
+    # result = None
+    result = {}
     num_attempts = 0
-    while num_attempts < 2 and result is None:
+    timed_out = False
+    while num_attempts < 2 and result.get("result") is None:
         print(num_attempts + 1, end = " ")
-        result = solver.solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm, hyperparameters)
-        num_attempts += 1
-    print( ("[solution found]" if result is not None else "[fail]") )
+        # p = multiprocessing.Process(target = solver.solve, args = (coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm, hyperparameters))
+        p = multiprocessing.Process(target = run_algorithm, args = (coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm, hyperparameters, result))
+        p.start()
 
-    return result, num_attempts
+        # wait for 5 minutes
+        p.join(300)
+
+        # terminate the function if it is still running
+        if p.is_alive():
+            p.terminate()
+            p.join()
+            timed_out = True
+            print(" - timed out", end = " ")
+        # result = solver.solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm, hyperparameters)
+        num_attempts += 1
+    print( ("[solution found]" if result.get("result") is not None else "[fail]") )
+
+    # return result, num_attempts, timed_out
+    return result.get("result"), num_attempts, timed_out
 
 def test_single_problem(hyperparameters_filename, hyperparameters, problem_dir, filename, solution_dir):
     # load the problem specification
@@ -77,14 +101,14 @@ def test_single_problem(hyperparameters_filename, hyperparameters, problem_dir, 
     vehicle_capacity = problem_specs.get("vehicles").get("capacity")
 
     # test SA on SBRP
-    result_SBRP, SBRP_num_attempts = test_single_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, "1", "SBRP", hyperparameters)
+    result_SBRP, SBRP_num_attempts, SBRP_timed_out = test_single_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, "1", "SBRP", hyperparameters)
 
     # test SA on multiple OnePDTSPs
-    result_OnePDTSP, OnePDTSP_num_attempts = test_single_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, "2", "OnePDTSP", hyperparameters)
+    result_OnePDTSP, OnePDTSP_num_attempts, OnePDTSP_timed_out = test_single_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, "2", "OnePDTSP", hyperparameters)
 
     problem_name = filename[:len(filename) - 5]
-    stats_SBRP = process_result(result_SBRP, id_mapping, solution_dir, problem_name, "SBRP", hyperparameters_filename[:len(hyperparameters_filename) - 5])
-    stats_OnePDTSP = process_result(result_OnePDTSP, id_mapping, solution_dir, problem_name, "OnePDTSP", hyperparameters_filename[:len(hyperparameters_filename) - 5])
+    stats_SBRP = process_result(result_SBRP, id_mapping, solution_dir, problem_name, "SBRP", hyperparameters_filename[:len(hyperparameters_filename) - 5], SBRP_timed_out)
+    stats_OnePDTSP = process_result(result_OnePDTSP, id_mapping, solution_dir, problem_name, "OnePDTSP", hyperparameters_filename[:len(hyperparameters_filename) - 5], OnePDTSP_timed_out)
 
     return [problem_name] + [SBRP_num_attempts] + stats_SBRP + [OnePDTSP_num_attempts] + stats_OnePDTSP
 
@@ -117,16 +141,23 @@ def main():
         return
 
     stats_df = pd.DataFrame(columns=["hyperparameters_file", "problem_name",
-    "SBRP_num_attempts", "SBRP_cost", "SBRP_solution_time",
-    "OnePDTSP_num_attempts", "OnePDTSP_cost", "OnePDTSP_solution_time"])
+    "SBRP_num_attempts", "SBRP_cost", "SBRP_solution_time", "SBRP_timed_out",
+    "OnePDTSP_num_attempts", "OnePDTSP_cost", "OnePDTSP_solution_time", "OnePDTSP_timed_out"])
 
     problem_dir = args.get("problem_dir") + "/" #"../test/problems/"
-    problem_files = ["problem1.json", "problem2.json"]
+    # problem_files = ["problem13.json", "problem17.json", "problem21.json"]
+    problem_files = [ filename for filename in os.listdir(problem_dir) if filename[len(filename) - 5:] == ".json" ]
+
+    # select 3 random problems
+    random.seed(0)
+    problem_files = random.sample(problem_files, k = 3)
+    print("Selected problem files: ", problem_files)
+    print()
 
     solution_dir = args.get("solution_dir") + "/" #"../test/solutions/"
 
     hyperparameters_dir = args.get("hyperparameters_dir") + "/"
-    hyperparameter_files = os.listdir(hyperparameters_dir)[::-1]
+    hyperparameter_files = sorted(os.listdir(hyperparameters_dir))
     hyperparameter_files = [ file for file in hyperparameter_files if file[len(file) - 5:] == ".json" ]
 
     for file in hyperparameter_files:
