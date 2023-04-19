@@ -85,9 +85,9 @@ algorithms = {
         "description": "Static Bike Repositioning Problem - Simulated Annealing algorithm",
         "default_hyperparameters": {
             "initial_probability_threshold": 0.95,
-            "alpha": 0.95,   # rate of change for temperature, should be within range (0.8, 0.99)
+            "alpha": 0.8,   # rate of change for temperature, should be within range (0.8, 0.99)
             "beta": 1.05,    # rate of change for phase length, should be > 1
-            "min_temp_percentage": 0.005,   # used to determine the termination criterion, what percentage of the initial temperature is the minimum temperature
+            "min_temp_percentage": 0.01,   # used to determine the termination criterion, what percentage of the initial temperature is the minimum temperature
             "initial_phase_length": 10
         }
     },
@@ -111,7 +111,7 @@ def solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorith
     end_time = time.time()
     requests_time = end_time - start_time
 
-    # print(requests)   # <- for debugging only
+    # print(sum(requests))   # <- for debugging only
 
     # check if the problem is solvable
     if abs(sum(requests)) > (vehicle_num * vehicle_capacity):
