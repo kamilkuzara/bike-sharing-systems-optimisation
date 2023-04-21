@@ -2,6 +2,8 @@
 
 import sys
 import os
+import random
+import multiprocessing
 
 import utils
 import solver
@@ -31,12 +33,15 @@ def parse_args(argv):
 
     return args
 
-def process_result(result, id_mapping, solution_dir, problem_name, algo):
+def process_result(result, id_mapping, solution_dir, problem_name, algo, timed_out):
     solution_filename = solution_dir + problem_name + "-solution_" + algo + ".json"
 
     if result is None:
-        utils.save_to_file({}, solution_filename)
-        return [None, None, None, None, None]
+        res = {}
+        if timed_out:
+            res["timed_out"] = timed_out
+        utils.save_to_file(res, solution_filename)
+        return [None, None, None, None, None, timed_out]
 
     # construct a dictionary in the JSON format from the result
     result = utils.perform_postprocessing(result, id_mapping)
@@ -54,19 +59,38 @@ def process_result(result, id_mapping, solution_dir, problem_name, algo):
     solution_time = round(result.get("solution_time"), 3)
     total_time = round(result.get("total_time"), 3)
 
-    return [num_vehicles_used, cost, requests_time, solution_time, total_time]
+    return [num_vehicles_used, cost, requests_time, solution_time, total_time, timed_out]
+
+def run_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm, result):
+    result["result"] = solver.solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm)
 
 def test_single_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm, algorithm_name):
     print("  " + algorithm_name + " - attempts: ", end="")
-    result = None
+    # result = None
+    manager = multiprocessing.Manager()
+    result = manager.dict()
     num_attempts = 0
-    while num_attempts < 2 and result is None:
+    timed_out = False
+    while num_attempts < 2 and result.get("result") is None:
         print(num_attempts + 1, end = " ")
-        result = solver.solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm)
-        num_attempts += 1
-    print( ("[solution found]" if result is not None else "[fail]") )
+        p = multiprocessing.Process(target = run_algorithm, args = (coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm, result))
+        p.start()
 
-    return result, num_attempts
+        # wait for 5 minutes
+        p.join(300)
+
+        # terminate the function if it is still running
+        if p.is_alive():
+            p.terminate()
+            p.join()
+            timed_out = True
+            print(" - timed out", end = " ")
+        # result = solver.solve(coordinates, utilisation_data, vehicle_num, vehicle_capacity, algorithm)
+        num_attempts += 1
+    print( ("[solution found]" if result.get("result") is not None else "[fail]") )
+
+    # return result, num_attempts, timed_out
+    return result.get("result"), num_attempts, timed_out
 
 def test_single_problem(problem_dir, filename, solution_dir):
     # load the problem specification
@@ -84,10 +108,10 @@ def test_single_problem(problem_dir, filename, solution_dir):
     vehicle_capacity = problem_specs.get("vehicles").get("capacity")
 
     # test SA on SBRP
-    result_SBRP, SBRP_num_attempts = test_single_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, "1", "SBRP")
+    result_SBRP, SBRP_num_attempts, SBRP_timed_out = test_single_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, "1", "SBRP")
 
     # test SA on multiple OnePDTSPs
-    result_OnePDTSP, OnePDTSP_num_attempts = test_single_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, "2", "OnePDTSP")
+    result_OnePDTSP, OnePDTSP_num_attempts, OnePDTSP_timed_out = test_single_algorithm(coordinates, utilisation_data, vehicle_num, vehicle_capacity, "2", "OnePDTSP")
 
     # print("  OnePDTSP - attempts: ", end="")
     # result_OnePDTSP = None
@@ -99,8 +123,8 @@ def test_single_problem(problem_dir, filename, solution_dir):
     # print( ("[solution found]" if result_OnePDTSP is not None else "[fail]") )
 
     problem_name = filename[:len(filename) - 5]
-    stats_SBRP = process_result(result_SBRP, id_mapping, solution_dir, problem_name, "SBRP")
-    stats_OnePDTSP = process_result(result_OnePDTSP, id_mapping, solution_dir, problem_name, "OnePDTSP")
+    stats_SBRP = process_result(result_SBRP, id_mapping, solution_dir, problem_name, "SBRP", SBRP_timed_out)
+    stats_OnePDTSP = process_result(result_OnePDTSP, id_mapping, solution_dir, problem_name, "OnePDTSP", OnePDTSP_timed_out)
 
     stations_num = len(coordinates) - 1
 
@@ -113,12 +137,14 @@ def main():
         return
 
     stats_df = pd.DataFrame(columns=["problem_name", "stations_num", "vehicle_num", "vehicle_capacity",
-    "SBRP_num_attempts", "SBRP_num_vehicles_used", "SBRP_cost", "SBRP_requests_time", "SBRP_solution_time", "SBRP_total_time",
-    "OnePDTSP_num_attempts", "OnePDTSP_num_vehicles_used", "OnePDTSP_cost", "OnePDTSP_requests_time", "OnePDTSP_solution_time", "OnePDTSP_total_time"])
+    "SBRP_num_attempts", "SBRP_num_vehicles_used", "SBRP_cost", "SBRP_requests_time", "SBRP_solution_time", "SBRP_total_time", "SBRP_timed_out",
+    "OnePDTSP_num_attempts", "OnePDTSP_num_vehicles_used", "OnePDTSP_cost", "OnePDTSP_requests_time", "OnePDTSP_solution_time", "OnePDTSP_total_time", "OnePDTSP_timed_out"])
 
     problem_dir = args.get("problem_dir") + "/" #"../test/problems/"
-    problem_files = os.listdir(problem_dir)[::-1]
+    problem_files = sorted(os.listdir(problem_dir))
+
     solution_dir = args.get("solution_dir") + "/" #"../test/solutions/"
+
     for filename in problem_files:
         print("Testing: " + filename)
         problem_row = test_single_problem(problem_dir, filename, solution_dir)
